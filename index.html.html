@@ -1,0 +1,164 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Road Overrun Screen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two-column work surface (ratings | result), stacking on phones; a road-sign band as header */
+:root{
+  --bg:#f3f4f2; --panel:#ffffff; --ink:#1d2326; --muted:#5b6569; --line:#d5d9d6;
+  --asphalt:#2a3134; --amber:#e8a317; --amber-ink:#7a4f00; --up:#b8432f; --down:#2f6f8f; --chip:#eceee9;
+  --f-disp:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141819; --panel:#1c2224; --ink:#e7eae8; --muted:#9aa4a7; --line:#30393c;
+  --asphalt:#0d1011; --amber:#f0b43a; --amber-ink:#f0b43a; --up:#e07a64; --down:#6fb0d0; --chip:#262e31; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141819; --panel:#1c2224; --ink:#e7eae8; --muted:#9aa4a7; --line:#30393c;
+  --asphalt:#0d1011; --amber:#f0b43a; --amber-ink:#f0b43a; --up:#e07a64; --down:#6fb0d0; --chip:#262e31; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.band{background:var(--asphalt);color:#f3f4f2;border-bottom:6px solid var(--amber)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.band .wrap{padding-block:22px 18px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+h1{font-family:var(--f-disp);font-weight:700;font-size:clamp(30px,5vw,44px);line-height:1.05;margin:6px 0 8px;text-wrap:balance;letter-spacing:.01em}
+.band p{margin:0;max-width:64ch;color:#c9cfcc}
+main.wrap{padding-block:24px 40px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){main.wrap{grid-template-columns:minmax(0,1fr)}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;min-width:0}
+h2{font-family:var(--f-disp);font-weight:600;font-size:22px;letter-spacing:.02em;margin:0 0 4px;text-transform:uppercase}
+.sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+.scale{display:flex;gap:6px;flex-wrap:wrap;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-bottom:14px}
+.scale span{background:var(--chip);padding:2px 7px;border-radius:3px}
+.factor{display:grid;gap:8px;padding:14px 0;border-top:1px solid var(--line)}
+.factor:first-of-type{border-top:none;padding-top:4px}
+.fhead{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.fname{font-weight:600}
+.code{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-right:6px}
+.or{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.seg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{display:block;text-align:center;padding:9px 0 7px;border:1px solid var(--line);border-radius:4px;cursor:pointer;font-family:var(--f-disp);font-size:20px;font-weight:600;background:var(--panel);transition:background .12s,border-color .12s}
+.seg label small{display:block;font-family:var(--f-body);font-size:11px;font-weight:400;color:var(--muted);margin-top:-2px}
+.seg input:checked+label{background:var(--amber);border-color:var(--amber);color:#1d2326}
+.seg input:checked+label small{color:#3b2c00}
+.seg input:focus-visible+label{outline:2px solid var(--ink);outline-offset:2px}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:4px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pnum{font-family:var(--f-disp);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.verdict{font-family:var(--f-mono);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:3px;border:1px solid currentColor}
+.v-hi{color:var(--up)} .v-lo{color:var(--down)} .v-mid{color:var(--amber-ink)}
+.meter{position:relative;height:14px;background:var(--chip);border-radius:3px;margin:16px 0 4px;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:var(--amber);transition:width .25s}
+.meter b{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.mscale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+h3{font-family:var(--f-disp);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.03em;margin:20px 0 8px}
+.contrib{display:grid;gap:6px}
+.crow{display:grid;grid-template-columns:44px minmax(0,1fr) 54px;gap:8px;align-items:center;font-size:13px}
+.ctrack{position:relative;height:12px;background:var(--chip);border-radius:2px}
+.ctrack::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.cbar{position:absolute;top:0;bottom:0;border-radius:2px}
+.cval{font-family:var(--f-mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.eq{font-family:var(--f-mono);font-size:12.5px;background:var(--chip);padding:10px 12px;border-radius:4px;overflow-x:auto;white-space:nowrap}
+.foot{grid-column:1/-1;font-size:13.5px;color:var(--muted)}
+.foot p{max-width:90ch;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="band"><div class="wrap">
+  <div class="eyebrow">UAE road projects · practitioner survey scorecard</div>
+  <h1>Risk of frequent cost overrun</h1>
+  <p>Rate the five causes as you see them on your projects. The scorecard returns the probability that you would report cost overrun as experienced <em>often</em> rather than <em>rarely</em>.</p>
+</div></div>
+
+<main class="wrap">
+  <section aria-labelledby="h-in">
+    <h2 id="h-in">Severity ratings</h2>
+    <p class="sub">Same 1–5 scale as the questionnaire. Odds ratio is per rating point.</p>
+    <div class="scale"><span>1 very low</span><span>2 low</span><span>3 moderate</span><span>4 high</span><span>5 very high</span></div>
+    <div id="factors"></div>
+    <div class="presets">
+      <button type="button" id="p-med">Survey median respondent</button>
+      <button type="button" id="p-coord">Coordination is the main problem</button>
+      <button type="button" id="p-pay">Payment and design are the main problems</button>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite" aria-labelledby="h-out">
+    <h2 id="h-out">Screening result</h2>
+    <div class="big"><span class="pnum" id="pnum">–</span><span class="verdict" id="verdict">–</span></div>
+    <div class="meter" aria-hidden="true"><i id="mfill"></i><b title="0.5 threshold"></b></div>
+    <div class="mscale"><span>0%</span><span>50% threshold</span><span>100%</span></div>
+    <h3>Contribution vs. median respondent (log-odds)</h3>
+    <div class="contrib" id="contrib"></div>
+    <p class="note" id="seen"></p>
+    <h3>Scorecard</h3>
+    <div class="eq" id="eq"></div>
+    <p class="note">Validated by duplicate-grouped cross-validation: AUC = 0.674 (138 respondents, 98 unique response patterns). Use it to rank and discuss projects, not to decide on a single contract.</p>
+  </section>
+
+  <div class="foot">
+    <p><strong>Source.</strong> Al Momani, Y. Leakage-free machine learning prediction of cost overrun frequency in road projects from practitioner survey data. Data: open Kaggle survey of 143 practitioners in Abu Dhabi, Dubai and Sharjah.</p>
+    <p><strong>Reading the signs.</strong> Only C29 raises the risk. The negative coefficients of C14 and C19 do not mean that late payment or design changes reduce overrun; for the same concern about coordination, respondents who stress payment and design issues were more often in the "rarely" group.</p>
+  </div>
+</main>
+
+<script>
+/*MODEL-START*/
+const MODEL = {"b0": 2.3213346624018043, "f": [{"code": "C29", "name": "Insufficient coordination between road and service authorities", "b": 0.9579111799984459, "med": 4.0}, {"code": "C14", "name": "Delayed payment for completed work", "b": -0.6432994111161544, "med": 4.0}, {"code": "C19", "name": "Change design", "b": -0.43039200444277215, "med": 4.0}, {"code": "C16", "name": "High rate of interest", "b": -0.14373085011047831, "med": 3.0}, {"code": "C05", "name": "Lack of consultant's knowledge of available materials", "b": -0.38315100249340817, "med": 3.0}]};
+function predict(x){            // x: array of 5 ratings, same order as MODEL.f
+  let z = MODEL.b0;
+  MODEL.f.forEach((f,i)=>{ z += f.b * x[i]; });
+  return 1/(1+Math.exp(-z));
+}
+/*MODEL-END*/
+const COMBOS = {"counts": {"13343": 1, "13431": 1, "14441": 3, "21313": 1, "21453": 1, "22331": 1, "22433": 3, "23211": 1, "23333": 1, "24311": 3, "24423": 4, "24433": 3, "24441": 2, "32234": 1, "32412": 1, "33211": 3, "33222": 1, "33231": 1, "33412": 1, "33433": 2, "33434": 2, "33443": 2, "33544": 1, "34221": 3, "34222": 1, "34345": 2, "34432": 1, "34443": 4, "34533": 1, "34534": 1, "35432": 1, "35445": 2, "35554": 4, "41311": 1, "42333": 1, "42444": 2, "43222": 1, "43311": 1, "43321": 3, "43323": 1, "43333": 1, "43335": 1, "43344": 1, "43411": 1, "43424": 2, "43442": 1, "43443": 1, "43522": 1, "43533": 3, "43544": 3, "43554": 1, "44332": 1, "44422": 1, "44434": 1, "44442": 1, "44444": 3, "44452": 5, "44514": 1, "44533": 2, "44535": 1, "44544": 1, "45454": 1, "45542": 1, "45543": 1, "45554": 5, "51511": 1, "53321": 1, "53433": 4, "53444": 2, "54333": 1, "54345": 2, "54433": 1, "54454": 1, "54541": 1, "55121": 3, "55352": 1, "55353": 1, "55433": 2, "55515": 1, "55523": 1, "55545": 3, "55551": 1}, "often": {"13343": 1, "13431": 0, "14441": 0, "21313": 1, "21453": 1, "22331": 1, "22433": 1, "23211": 1, "23333": 0, "24311": 3, "24423": 0, "24433": 0, "24441": 0, "32234": 0, "32412": 0, "33211": 3, "33222": 0, "33231": 0, "33412": 0, "33433": 0, "33434": 2, "33443": 0, "33544": 0, "34221": 3, "34222": 0, "34345": 0, "34432": 0, "34443": 4, "34533": 1, "34534": 0, "35432": 0, "35445": 0, "35554": 0, "41311": 1, "42333": 1, "42444": 2, "43222": 0, "43311": 1, "43321": 3, "43323": 1, "43333": 1, "43335": 0, "43344": 1, "43411": 1, "43424": 0, "43442": 0, "43443": 0, "43522": 1, "43533": 3, "43544": 0, "43554": 1, "44332": 1, "44422": 1, "44434": 1, "44442": 0, "44444": 3, "44452": 5, "44514": 1, "44533": 0, "44535": 1, "44544": 0, "45454": 0, "45542": 1, "45543": 0, "45554": 0, "51511": 1, "53321": 1, "53433": 4, "53444": 2, "54333": 1, "54345": 2, "54433": 1, "54454": 1, "54541": 1, "55121": 3, "55352": 0, "55353": 1, "55433": 1, "55515": 1, "55523": 0, "55545": 0, "55551": 0}};
+const LABEL = ["very low","low","moderate","high","very high"];
+const state = MODEL.f.map(f=>f.med);
+const host = document.getElementById("factors");
+MODEL.f.forEach((f,i)=>{
+  const d = document.createElement("div"); d.className="factor";
+  const or = Math.exp(f.b);
+  d.innerHTML = `<div class="fhead"><div><span class="code">${f.code}</span><span class="fname">${f.name}</span></div>
+    <span class="or">OR ${or.toFixed(2)}</span></div>
+    <div class="seg" role="radiogroup" aria-label="${f.code} rating">${[1,2,3,4,5].map(v=>
+      `<input type="radio" name="r${i}" id="r${i}-${v}" value="${v}"><label for="r${i}-${v}">${v}<small>${LABEL[v-1]}</small></label>`).join("")}</div>`;
+  host.appendChild(d);
+  d.querySelectorAll("input").forEach(inp=>inp.addEventListener("change",()=>{ state[i]=+inp.value; render(); }));
+});
+function setAll(v){ v.forEach((x,i)=>{ state[i]=x; const el=document.getElementById(`r${i}-${x}`); if(el) el.checked=true; }); render(); }
+document.getElementById("p-med").onclick=()=>setAll(MODEL.f.map(f=>f.med));
+document.getElementById("p-coord").onclick=()=>setAll([5,3,3,3,3]);
+document.getElementById("p-pay").onclick=()=>setAll([3,5,5,3,3]);
+document.getElementById("eq").textContent = "logit P = " + MODEL.b0.toFixed(3) +
+  MODEL.f.map(f=>` ${f.b>=0?"+":"−"} ${Math.abs(f.b).toFixed(3)}·${f.code}`).join("");
+function render(){
+  const p = predict(state);
+  document.getElementById("pnum").textContent = (p*100).toFixed(0)+"%";
+  const v = document.getElementById("verdict");
+  if(p>=0.65){v.textContent="Higher risk";v.className="verdict v-hi";}
+  else if(p<=0.35){v.textContent="Lower risk";v.className="verdict v-lo";}
+  else {v.textContent="Uncertain";v.className="verdict v-mid";}
+  document.getElementById("mfill").style.width=(p*100).toFixed(1)+"%";
+  const c = MODEL.f.map((f,i)=>f.b*(state[i]-f.med)); const M = 3.0;
+  document.getElementById("contrib").innerHTML = c.map((x,i)=>{
+    const w = Math.min(Math.abs(x)/M,1)*50, left = x>=0?50:50-w;
+    return `<div class="crow"><span class="code">${MODEL.f[i].code}</span><div class="ctrack"><div class="cbar" style="left:${left}%;width:${w}%;background:var(${x>=0?"--up":"--down"})"></div></div><span class="cval">${x>=0?"+":"−"}${Math.abs(x).toFixed(2)}</span></div>`;
+  }).join("");
+  const key = state.join(""), n = COMBOS.counts[key]||0, o = COMBOS.often[key]||0;
+  document.getElementById("seen").textContent = n
+    ? `This exact combination was given by ${n} of the 138 survey respondents (${o} answered "often").`
+    : "No survey respondent gave this exact combination, so treat the result as an extrapolation within the 1–5 range.";
+}
+setAll(MODEL.f.map(f=>f.med));
+</script>
+
+</body></html>
